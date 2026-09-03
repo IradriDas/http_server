@@ -41,7 +41,26 @@ int main()
 
     printf("server listening on port 8080...\n");
 
+    while (1)
+    {
+        struct sockaddr_storage client_addr; // client is gonna fill this block
+        socklen_t client_addr_len = sizeof(client_addr);
+        
+        int client_id = accept(soc_id, (struct sockaddr *)&client_addr, &client_addr_len);
 
+        if (client_id <0 )
+        {
+            perror("Accept failed");
+            exit(EXIT_FAILURE);
+        }
+
+        printf("client connected..\n");
+
+          // TODO: read the client's HTTP request, send a response, using acc_id
+
+        close(client_id);  // done talking to this client
+
+    }
     
     return 0;
 }
