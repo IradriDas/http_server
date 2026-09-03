@@ -25,6 +25,15 @@ int main()
         exit(EXIT_FAILURE);
     }
 
+    // --- lets the client to use the last used connection ---
+    int opt = 1;
+    if (setsockopt(soc_id, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+    {
+        perror("setsockopt failed");
+        exit(EXIT_FAILURE);
+    }
+    // -------------------------------------------------------------
+
     if (bind(soc_id, res->ai_addr, res->ai_addrlen) < 0)
     {
         perror("bind failed");
@@ -45,10 +54,10 @@ int main()
     {
         struct sockaddr_storage client_addr; // client is gonna fill this block
         socklen_t client_addr_len = sizeof(client_addr);
-        
+
         int client_id = accept(soc_id, (struct sockaddr *)&client_addr, &client_addr_len);
 
-        if (client_id <0 )
+        if (client_id < 0)
         {
             perror("Accept failed");
             exit(EXIT_FAILURE);
@@ -56,11 +65,26 @@ int main()
 
         printf("client connected..\n");
 
-          // TODO: read the client's HTTP request, send a response, using acc_id
+        // TODO: read the client's HTTP request, send a response, using acc_id
+        char buffer[4096];
+        int bytes_received = recv(client_id, buffer, sizeof(buffer) - 1, 0);
+        if (bytes_received > 0)
+        {
+            buffer[bytes_received] = '\0';
+            printf("Received:\n%s\n", buffer);
 
-        close(client_id);  // done talking to this client
+            const char *response =
+                "HTTP/1.1 200 OK\r\n"
+                "Content-Type: text/plain\r\n"
+                "Content-Length: 13\r\n"
+                "\r\n"
+                "Hello, world!";
 
+            send(client_id, response, strlen(response), 0);
+        }
+
+        close(client_id); // done talking to this client
     }
-    
+
     return 0;
 }
