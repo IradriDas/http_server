@@ -18,26 +18,30 @@ int main()
 
     getaddrinfo(NULL, "8080", &requirements, &res);
 
-    int soc_id = socket(res->ai_family, res->ai_socktype, res->ai_protocol);  // no need to setup manually
+    int soc_id = socket(res->ai_family, res->ai_socktype, res->ai_protocol); // no need to setup manually
     if (soc_id < 0)
     {
         perror("socket failed");
         exit(EXIT_FAILURE);
     }
 
-    if (bind(soc_id, res->ai_addr, res->ai_addrlen) < 0){
+    if (bind(soc_id, res->ai_addr, res->ai_addrlen) < 0)
+    {
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
 
     freeaddrinfo(res);
 
-    while (1)
+    if (listen(soc_id, 10) < 0)
     {
-        // some kind of request must be received here
-        printf("waiting for request ... \n");
-        sleep(1);
+        perror("listen failed");
+        exit(EXIT_FAILURE);
     }
 
+    printf("server listening on port 8080...\n");
+
+
+    
     return 0;
 }
